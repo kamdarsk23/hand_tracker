@@ -2,7 +2,7 @@ import { useState } from 'react'
 import CardPicker from './CardPicker'
 import ActionBuilder from './ActionBuilder'
 import ActionTimeline from './ActionTimeline'
-import { estimatePot } from '../utils/handMath'
+import { estimatePot, getInitialPot } from '../utils/handMath'
 
 export default function TurnStep({
   hand,
@@ -12,6 +12,7 @@ export default function TurnStep({
   onHandOver,
   usedCards,
   positions,
+  editable = true,
 }) {
   const [isPickingTurn, setIsPickingTurn] = useState(false)
   const turn = hand.turn
@@ -43,7 +44,10 @@ export default function TurnStep({
     })
   }
 
-  const estimatedPot = estimatePot([hand.preflopActions ?? [], hand.flopActions ?? [], actions])
+  const estimatedPot = estimatePot(
+    [hand.preflopActions ?? [], hand.flopActions ?? [], actions],
+    getInitialPot(hand)
+  )
 
   return (
     <div className="preflop-action">
@@ -69,27 +73,44 @@ export default function TurnStep({
 
       <section className="hero-setup__section">
         <h2 className="hero-setup__label">Timeline</h2>
-        <ActionTimeline actions={actions} onDelete={deleteAction} onUpdate={updateAction} />
+        <ActionTimeline
+          actions={actions}
+          onDelete={deleteAction}
+          onUpdate={updateAction}
+          interactive={editable}
+        />
       </section>
 
-      <section className="hero-setup__section">
-        <h2 className="hero-setup__label">Add Action</h2>
-        <ActionBuilder hand={hand} actions={actions} onAction={addAction} positions={positions} />
-      </section>
+      {editable && (
+        <section className="hero-setup__section">
+          <h2 className="hero-setup__label">Add Action</h2>
+          <ActionBuilder
+            hand={hand}
+            actions={actions}
+            onAction={addAction}
+            positions={positions}
+            street="turn"
+            straddle={hand.straddle}
+            onHandOver={onHandOver}
+          />
+        </section>
+      )}
 
-      <div className="preflop-action__footer">
-        <button
-          type="button"
-          className="hero-setup__next-btn"
-          disabled={!turn}
-          onClick={onDealRiver}
-        >
-          Deal River
-        </button>
-        <button type="button" className="preflop-action__hand-over" onClick={onHandOver}>
-          Hand Over
-        </button>
-      </div>
+      {editable && (
+        <div className="preflop-action__footer">
+          <button
+            type="button"
+            className="hero-setup__next-btn"
+            disabled={!turn}
+            onClick={onDealRiver}
+          >
+            Deal River
+          </button>
+          <button type="button" className="preflop-action__hand-over" onClick={onHandOver}>
+            Hand Over
+          </button>
+        </div>
+      )}
 
       {isPickingTurn && (
         <div className="hero-setup__modal-overlay" onClick={() => setIsPickingTurn(false)}>

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import CardPicker from './CardPicker'
 import ActionBuilder from './ActionBuilder'
 import ActionTimeline from './ActionTimeline'
-import { estimatePot } from '../utils/handMath'
+import { estimatePot, getInitialPot } from '../utils/handMath'
 
 export default function RiverStep({
   hand,
@@ -12,6 +12,7 @@ export default function RiverStep({
   onHandOver,
   usedCards,
   positions,
+  editable = true,
 }) {
   const [isPickingRiver, setIsPickingRiver] = useState(false)
   const river = hand.river
@@ -48,7 +49,7 @@ export default function RiverStep({
     hand.flopActions ?? [],
     hand.turnActions ?? [],
     actions,
-  ])
+  ], getInitialPot(hand))
 
   return (
     <div className="preflop-action">
@@ -74,27 +75,44 @@ export default function RiverStep({
 
       <section className="hero-setup__section">
         <h2 className="hero-setup__label">Timeline</h2>
-        <ActionTimeline actions={actions} onDelete={deleteAction} onUpdate={updateAction} />
+        <ActionTimeline
+          actions={actions}
+          onDelete={deleteAction}
+          onUpdate={updateAction}
+          interactive={editable}
+        />
       </section>
 
-      <section className="hero-setup__section">
-        <h2 className="hero-setup__label">Add Action</h2>
-        <ActionBuilder hand={hand} actions={actions} onAction={addAction} positions={positions} />
-      </section>
+      {editable && (
+        <section className="hero-setup__section">
+          <h2 className="hero-setup__label">Add Action</h2>
+          <ActionBuilder
+            hand={hand}
+            actions={actions}
+            onAction={addAction}
+            positions={positions}
+            street="river"
+            straddle={hand.straddle}
+            onHandOver={onHandOver}
+          />
+        </section>
+      )}
 
-      <div className="preflop-action__footer">
-        <button
-          type="button"
-          className="hero-setup__next-btn"
-          disabled={!river}
-          onClick={onShowdown}
-        >
-          Showdown
-        </button>
-        <button type="button" className="preflop-action__hand-over" onClick={onHandOver}>
-          Hand Over
-        </button>
-      </div>
+      {editable && (
+        <div className="preflop-action__footer">
+          <button
+            type="button"
+            className="hero-setup__next-btn"
+            disabled={!river}
+            onClick={onShowdown}
+          >
+            Showdown
+          </button>
+          <button type="button" className="preflop-action__hand-over" onClick={onHandOver}>
+            Hand Over
+          </button>
+        </div>
+      )}
 
       {isPickingRiver && (
         <div className="hero-setup__modal-overlay" onClick={() => setIsPickingRiver(false)}>

@@ -29,7 +29,7 @@ function toNumberOrNull(value) {
   return Number.isFinite(parsed) ? parsed : null
 }
 
-export default function ActionTimeline({ actions = [], onDelete, onUpdate }) {
+export default function ActionTimeline({ actions = [], onDelete, onUpdate, interactive = true }) {
   const [expandedFor, setExpandedFor] = useState(null)
   const [draftDollar, setDraftDollar] = useState('')
 
@@ -46,21 +46,25 @@ export default function ActionTimeline({ actions = [], onDelete, onUpdate }) {
   return (
     <div className="action-timeline">
       {actions.map((actionItem, index) => {
-        const isOpen = expandedFor === index
+        const isOpen = interactive && expandedFor === index
         const hasPercent = actionItem.sizingType === 'percent' && actionItem.sizingValue != null
         const hasDollars = actionItem.sizingType === 'dollars' || actionItem.rawDollars != null
         return (
           <div key={actionItem.id ?? `${actionItem.position}-${index}`} className="action-timeline__row action-timeline__row--stacked">
-            <button
-              type="button"
-              className="action-timeline__item"
-              onClick={() => {
-                setExpandedFor(isOpen ? null : index)
-                setDraftDollar(actionItem.rawDollars != null ? String(actionItem.rawDollars) : '')
-              }}
-            >
-              {formatAction(actionItem)}
-            </button>
+            {interactive ? (
+              <button
+                type="button"
+                className="action-timeline__item"
+                onClick={() => {
+                  setExpandedFor(isOpen ? null : index)
+                  setDraftDollar(actionItem.rawDollars != null ? String(actionItem.rawDollars) : '')
+                }}
+              >
+                {formatAction(actionItem)}
+              </button>
+            ) : (
+              <div className="action-timeline__item">{formatAction(actionItem)}</div>
+            )}
             {isOpen && (
               <div className="action-timeline__editor">
                 <div className="action-timeline__action-types">

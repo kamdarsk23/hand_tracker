@@ -83,9 +83,26 @@ export default function HandDetail({ hand, onEdit, onDelete }) {
   const flopCards = hand.flop ?? []
   const turnCards = hand.turn ? [hand.turn] : []
   const riverCards = hand.river ? [hand.river] : []
+  const stakes =
+    hand.blinds?.sb != null && hand.blinds?.bb != null
+      ? `$${hand.blinds.sb}/$${hand.blinds.bb}`
+      : '-'
+  const straddleText = hand.straddle?.active
+    ? `${hand.straddle.position} straddle $${hand.straddle.amount ?? '-'}`
+    : 'No straddle'
 
   return (
     <div className="view hand-detail">
+      <section className="detail-section">
+        <h2 className="detail-section__title">Table Setup</h2>
+        <p className="detail-section__row">
+          <strong>Blinds:</strong> {stakes}
+        </p>
+        <p className="detail-section__row">
+          <strong>Straddle:</strong> {straddleText}
+        </p>
+      </section>
+
       <section className="detail-section">
         <h2 className="detail-section__title">Hero</h2>
         <p className="detail-section__row">

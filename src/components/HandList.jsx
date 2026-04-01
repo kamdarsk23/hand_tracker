@@ -40,6 +40,13 @@ function formatRelativeTime(isoString) {
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 }
 
+function formatStakes(hand) {
+  const sb = hand?.blinds?.sb
+  const bb = hand?.blinds?.bb
+  if (sb == null || bb == null || sb === '' || bb === '') return null
+  return `$${sb}/$${bb}`
+}
+
 export default function HandList({ hands = [], onSelect }) {
   const sortedHands = useMemo(() => {
     return [...hands].sort((a, b) => {
@@ -77,6 +84,7 @@ export default function HandList({ hands = [], onSelect }) {
                   <div className="list-card__hero-cards">
                     {(hand.heroCards ?? []).filter(Boolean).map((card) => renderCardBadge(card))}
                   </div>
+                  {formatStakes(hand) && <span className="list-card__stakes">{formatStakes(hand)}</span>}
                 </div>
                 <span className="list-card__time">{formatRelativeTime(hand.updatedAt ?? hand.createdAt)}</span>
               </div>

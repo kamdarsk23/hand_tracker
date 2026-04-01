@@ -11,8 +11,8 @@ function actionAmount(actionItem, currentPot) {
   return 0
 }
 
-export function estimatePot(actionLists = []) {
-  let pot = 0
+export function estimatePot(actionLists = [], initialPot = 0) {
+  let pot = Number(initialPot) || 0
   let currentPrice = 0
 
   for (const actions of actionLists) {
@@ -33,6 +33,14 @@ export function estimatePot(actionLists = []) {
   return pot
 }
 
+export function getInitialPot(hand) {
+  const sb = Number(hand?.blinds?.sb) || 0
+  const bb = Number(hand?.blinds?.bb) || 0
+  const straddleActive = Boolean(hand?.straddle?.active)
+  const straddleAmount = straddleActive ? Number(hand?.straddle?.amount) || 0 : 0
+  return sb + bb + straddleAmount
+}
+
 export function getOrderedHandPositions(hand) {
   const included = [hand.heroPosition, ...(hand.villains ?? []).map((villain) => villain.position)]
     .filter(Boolean)
@@ -42,14 +50,18 @@ export function getOrderedHandPositions(hand) {
 
 export function getActivePositionsAfterActions(startPositions, actionLists = []) {
   const folded = new Set()
+  const allIn = new Set()
   for (const actions of actionLists) {
     for (const actionItem of actions ?? []) {
       if (actionItem?.action === 'fold' && actionItem.position) {
         folded.add(actionItem.position)
       }
+      if (actionItem?.action === 'all-in' && actionItem.position) {
+        allIn.add(actionItem.position)
+      }
     }
   }
-  return startPositions.filter((position) => !folded.has(position))
+  return startPositions.filter((position) => !folded.has(position) && !allIn.has(position))
 }
 
 export function collectUsedCards(hand) {

@@ -9,6 +9,8 @@ export default function PreflopAction({
   onDealFlop,
   onHandOver,
   positions,
+  initialPot = 0,
+  editable = true,
 }) {
   const actions = hand.preflopActions ?? []
   const updateHand = (patch) => onChange?.({ ...hand, ...patch })
@@ -36,7 +38,7 @@ export default function PreflopAction({
     updateHand({ preflopActions: nextActions })
   }
 
-  const estimatedPot = estimatePot([actions])
+  const estimatedPot = estimatePot([actions], initialPot)
 
   return (
     <div className="preflop-action">
@@ -51,24 +53,41 @@ export default function PreflopAction({
 
       <section className="hero-setup__section">
         <h2 className="hero-setup__label">Timeline</h2>
-        <ActionTimeline actions={actions} onDelete={deleteAction} onUpdate={updateAction} />
+        <ActionTimeline
+          actions={actions}
+          onDelete={deleteAction}
+          onUpdate={updateAction}
+          interactive={editable}
+        />
       </section>
 
-      <section className="hero-setup__section">
-        <h2 className="hero-setup__label">Add Action</h2>
-        <ActionBuilder hand={hand} actions={actions} onAction={addAction} positions={positions} />
-      </section>
+      {editable && (
+        <section className="hero-setup__section">
+          <h2 className="hero-setup__label">Add Action</h2>
+          <ActionBuilder
+            hand={hand}
+            actions={actions}
+            onAction={addAction}
+            positions={positions}
+            street="preflop"
+            straddle={hand.straddle}
+            onHandOver={onHandOver}
+          />
+        </section>
+      )}
 
-      <div className="preflop-action__footer">
-        {actions.length > 0 && (
-          <button type="button" className="hero-setup__next-btn" onClick={onDealFlop}>
-            Deal Flop
+      {editable && (
+        <div className="preflop-action__footer">
+          {actions.length > 0 && (
+            <button type="button" className="hero-setup__next-btn" onClick={onDealFlop}>
+              Deal Flop
+            </button>
+          )}
+          <button type="button" className="preflop-action__hand-over" onClick={onHandOver}>
+            Hand Over
           </button>
-        )}
-        <button type="button" className="preflop-action__hand-over" onClick={onHandOver}>
-          Hand Over
-        </button>
-      </div>
+        </div>
+      )}
     </div>
   )
 }

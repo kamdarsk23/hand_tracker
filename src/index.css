@@ -180,6 +180,14 @@ button {
   gap: 6px;
 }
 
+.list-card__stakes {
+  font-size: 11px;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
 .list-card__card-badge,
 .detail-card {
   border: 1px solid var(--border);
@@ -286,6 +294,18 @@ button {
 }
 
 .hero-setup__position-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.table-setup__blinds-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.table-setup__straddle-row {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
@@ -675,10 +695,21 @@ button {
   gap: 10px;
 }
 
-.action-builder__positions {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
+.action-builder__actor {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #0d1117;
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+}
+
+.action-builder__actor-stack {
+  font-size: 13px;
+  color: var(--muted);
 }
 
 .action-builder__actions {
@@ -701,6 +732,10 @@ button {
   background: rgba(46, 160, 67, 0.2);
 }
 
+.action-builder__action-btn--muted {
+  opacity: 0.45;
+}
+
 .action-builder__sizing {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -719,6 +754,34 @@ button {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 8px;
+}
+
+.action-builder__override {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.action-builder__override-btn {
+  min-height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.action-builder__override-btn--selected {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.action-builder__end-hand {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px dashed #7f1d1d;
+  background: rgba(127, 29, 29, 0.2);
+  color: #fecaca;
 }
 
 .preflop-action__footer {
