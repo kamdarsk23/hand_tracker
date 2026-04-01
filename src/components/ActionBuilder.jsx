@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { POSITIONS, SIZING_PRESETS } from '../constants'
+import { POSITIONS } from '../constants'
 import getActionOrder from '../utils/actionOrder'
 
 function firstInCycle(order, startAfter, predicate) {
@@ -147,7 +147,6 @@ export default function ActionBuilder({
   const [currentActorIndex, setCurrentActorIndex] = useState(0)
   const [overridePosition, setOverridePosition] = useState(null)
   const [pendingSizedAction, setPendingSizedAction] = useState(null)
-  const [showDollarInput, setShowDollarInput] = useState(false)
   const [dollarAmount, setDollarAmount] = useState('')
 
   const allPositions = useMemo(() => {
@@ -205,7 +204,6 @@ export default function ActionBuilder({
       toAmount: payload.toAmount ?? null,
     })
     setPendingSizedAction(null)
-    setShowDollarInput(false)
     setDollarAmount('')
     setOverridePosition(null)
     setCurrentActorIndex((prev) =>
@@ -231,7 +229,7 @@ export default function ActionBuilder({
       return
     }
     setPendingSizedAction(action)
-    setShowDollarInput(false)
+    setDollarAmount('')
   }
 
   const confirmDollar = () => {
@@ -244,6 +242,18 @@ export default function ActionBuilder({
       rawDollars: parsed,
       toAmount,
     })
+  }
+
+  const appendToAmount = (nextChar) => {
+    setDollarAmount((prev) => {
+      if (!/^\d$/.test(nextChar)) return prev
+      if (prev === '0') return nextChar
+      return `${prev}${nextChar}`
+    })
+  }
+
+  const backspaceAmount = () => {
+    setDollarAmount((prev) => prev.slice(0, -1))
   }
 
   const indexedActor = streetState.activePositions[currentActorIndex] ?? null
@@ -318,53 +328,28 @@ export default function ActionBuilder({
       </div>
 
       {pendingSizedAction && (
-        <div className="action-builder__sizing">
-          {SIZING_PRESETS.map((preset) => (
-            <button
-              key={preset}
-              type="button"
-              className="action-builder__size-btn"
-              onClick={() => {
-                const sizedAmount = (streetState.currentBet > 0 ? streetState.currentBet : 1) * (preset / 100)
-                const toAmount = pendingSizedAction === 'raise' ? actorContribution + sizedAmount : sizedAmount
-                if (pendingSizedAction === 'raise' && toAmount <= streetState.currentBet) return
-                submitAction(pendingSizedAction, {
-                  sizingType: 'percent',
-                  sizingValue: preset,
-                  rawDollars: sizedAmount,
-                  toAmount,
-                })
-              }}
-            >
-              {preset}%
+        <div className="action-builder__dollar action-builder__dollar--keypad">
+          <div className="action-builder__keypad">
+            {['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'].map((keyValue) => (
+              <button
+                key={keyValue}
+                type="button"
+                className="action-builder__key-btn"
+                onClick={() => appendToAmount(keyValue)}
+              >
+                {keyValue}
+              </button>
+            ))}
+            <button type="button" className="action-builder__key-btn" onClick={backspaceAmount}>
+              ⌫
             </button>
-          ))}
-          <button
-            type="button"
-            className="action-builder__size-btn"
-            onClick={() => setShowDollarInput((prev) => !prev)}
-          >
-            $
-          </button>
-        </div>
-      )}
-
-      {pendingSizedAction && showDollarInput && (
-        <div className="action-builder__dollar">
-          <label className="hero-setup__stack-input-wrap">
-            <span className="hero-setup__dollar">$</span>
-            <input
-              className="hero-setup__stack-input"
-              type="text"
-              inputMode="decimal"
-              value={dollarAmount}
-              placeholder="Amount"
-              onChange={(event) => setDollarAmount(event.target.value)}
-            />
-          </label>
-          <button type="button" className="action-builder__confirm-btn" onClick={confirmDollar}>
-            Confirm
-          </button>
+            <button type="button" className="action-builder__key-btn action-builder__key-btn--enter" onClick={confirmDollar}>
+              Enter
+            </button>
+          </div>
+          <div className="action-builder__amount-pill">
+            {dollarAmount || '0'}
+          </div>
         </div>
       )}
 

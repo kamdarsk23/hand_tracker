@@ -1,8 +1,16 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import CardPicker from './CardPicker'
 import ActionBuilder from './ActionBuilder'
 import ActionTimeline from './ActionTimeline'
 import { estimatePot, getInitialPot } from '../utils/handMath'
+
+function formatBoardCard(card) {
+  if (!card || card.length !== 2) return 'Pick card'
+  const rank = card[0]
+  const suit = card[1]
+  const symbols = { s: '♠', h: '♥', d: '♦', c: '♣' }
+  return `${rank}${symbols[suit] ?? ''}`
+}
 
 export default function TurnStep({
   hand,
@@ -16,6 +24,7 @@ export default function TurnStep({
 }) {
   const [isPickingTurn, setIsPickingTurn] = useState(false)
   const turn = hand.turn
+  const flop = hand.flop ?? [null, null, null]
   const actions = hand.turnActions ?? []
 
   const updateHand = (patch) => onChange?.({ ...hand, ...patch })
@@ -49,6 +58,13 @@ export default function TurnStep({
     getInitialPot(hand)
   )
 
+  useEffect(() => {
+    if (!editable) return
+    if (turn) return
+    if (isPickingTurn) return
+    setIsPickingTurn(true)
+  }, [editable, turn, isPickingTurn])
+
   return (
     <div className="preflop-action">
       <button type="button" className="logger-step__back" onClick={onBack}>
@@ -56,14 +72,24 @@ export default function TurnStep({
       </button>
 
       <section className="hero-setup__section">
-        <h2 className="hero-setup__label">Turn Card</h2>
-        <button
-          type="button"
-          className={`hero-setup__card-slot ${turn ? 'hero-setup__card-slot--filled' : ''}`}
-          onClick={() => (turn ? updateHand({ turn: null }) : setIsPickingTurn(true))}
-        >
-          {turn ?? 'Pick card'}
-        </button>
+        <h2 className="hero-setup__label">Board</h2>
+        <div className="street-step__board-grid">
+          {flop.map((card, idx) => (
+            <div
+              key={`flop-${idx}`}
+              className={`hero-setup__card-slot ${card ? 'hero-setup__card-slot--filled' : ''}`}
+            >
+              {formatBoardCard(card)}
+            </div>
+          ))}
+          <button
+            type="button"
+            className={`hero-setup__card-slot ${turn ? 'hero-setup__card-slot--filled' : ''}`}
+            onClick={() => (turn ? updateHand({ turn: null }) : setIsPickingTurn(true))}
+          >
+            {formatBoardCard(turn)}
+          </button>
+        </div>
       </section>
 
       <section className="hero-setup__section">

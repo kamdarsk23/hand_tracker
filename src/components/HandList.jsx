@@ -79,7 +79,7 @@ export default function HandList({ hands = [], onSelect }) {
             <button type="button" className="list-card" onClick={() => onSelect?.(hand.id)}>
               <div className="list-card__header">
                 <div className="list-card__hero-row">
-                  <strong>{hand.heroPosition ?? 'Unknown'}</strong>
+                  <strong>{hand.heroPosition ?? 'No Hero'}</strong>
                   <span>-</span>
                   <div className="list-card__hero-cards">
                     {(hand.heroCards ?? []).filter(Boolean).map((card) => renderCardBadge(card))}

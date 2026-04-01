@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import CardPicker from './CardPicker'
+import { estimatePot, getInitialPot } from '../utils/handMath'
 
 function ensureVillainEntry(list, position) {
   const existing = list.find((entry) => entry.position === position)
@@ -17,6 +18,7 @@ export default function ResultStep({
 }) {
   const [expanded, setExpanded] = useState({})
   const [activePick, setActivePick] = useState(null) // { position, slot }
+  const [potAutoFilled, setPotAutoFilled] = useState(false)
 
   const updateHand = (patch) => onChange?.({ ...hand, ...patch })
   const villainShowdown = hand.villainShowdown ?? []
@@ -28,6 +30,27 @@ export default function ResultStep({
     }
     return map
   }, [villainShowdown])
+
+  const estimatedFinalPot = useMemo(
+    () =>
+      estimatePot(
+        [
+          hand.preflopActions ?? [],
+          hand.flopActions ?? [],
+          hand.turnActions ?? [],
+          hand.riverActions ?? [],
+        ],
+        getInitialPot(hand)
+      ),
+    [hand]
+  )
+
+  useEffect(() => {
+    if (potAutoFilled) return
+    if (hand.potSize != null && hand.potSize !== '') return
+    updateHand({ potSize: Number(estimatedFinalPot.toFixed(2)) })
+    setPotAutoFilled(true)
+  }, [potAutoFilled, hand.potSize, estimatedFinalPot])
 
   const setVillainCard = (card) => {
     if (!activePick) return
