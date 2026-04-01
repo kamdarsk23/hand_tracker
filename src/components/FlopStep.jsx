@@ -1,8 +1,16 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import CardPicker from './CardPicker'
 import ActionBuilder from './ActionBuilder'
 import ActionTimeline from './ActionTimeline'
 import { estimatePot, getInitialPot } from '../utils/handMath'
+
+function formatBoardCard(card) {
+  if (!card || card.length !== 2) return 'Pick card'
+  const rank = card[0]
+  const suit = card[1]
+  const symbols = { s: '♠', h: '♥', d: '♦', c: '♣' }
+  return `${rank}${symbols[suit] ?? ''}`
+}
 
 export default function FlopStep({
   hand,
@@ -25,7 +33,8 @@ export default function FlopStep({
     const nextBoard = [...board]
     nextBoard[activeBoardSlot] = card
     updateHand({ flop: nextBoard })
-    setActiveBoardSlot(null)
+    const nextMissing = nextBoard.findIndex((boardCard) => !boardCard)
+    setActiveBoardSlot(nextMissing >= 0 ? nextMissing : null)
   }
 
   const clearBoardCard = (slot) => {
@@ -61,6 +70,15 @@ export default function FlopStep({
   const canDealTurn = board.filter(Boolean).length === 3
   const estimatedPot = estimatePot([hand.preflopActions ?? [], actions], getInitialPot(hand))
 
+  useEffect(() => {
+    if (!editable) return
+    if (activeBoardSlot != null) return
+    const missingIndex = board.findIndex((boardCard) => !boardCard)
+    if (missingIndex >= 0) {
+      setActiveBoardSlot(missingIndex)
+    }
+  }, [editable, activeBoardSlot, board])
+
   return (
     <div className="preflop-action">
       <button type="button" className="logger-step__back" onClick={onBack}>
@@ -79,7 +97,7 @@ export default function FlopStep({
                 className={`hero-setup__card-slot ${card ? 'hero-setup__card-slot--filled' : ''}`}
                 onClick={() => (card ? clearBoardCard(slot) : setActiveBoardSlot(slot))}
               >
-                {card ?? 'Pick card'}
+                {formatBoardCard(card)}
               </button>
             )
           })}

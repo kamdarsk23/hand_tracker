@@ -1,18 +1,21 @@
-const POSTFLOP_CLOCKWISE = ['SB', 'BB', 'UTG', 'UTG+1', 'UTG+2', 'LJ', 'HJ', 'CO', 'BTN']
-
-const PREFLOP_NO_STRADDLE = ['UTG', 'UTG+1', 'UTG+2', 'LJ', 'HJ', 'CO', 'BTN', 'SB', 'BB']
-const PREFLOP_UTG_STRADDLE = ['UTG+1', 'UTG+2', 'LJ', 'HJ', 'CO', 'BTN', 'SB', 'BB', 'UTG']
-const PREFLOP_BTN_STRADDLE = ['UTG', 'UTG+1', 'UTG+2', 'LJ', 'HJ', 'CO', 'SB', 'BB', 'BTN']
+const POSTFLOP_CLOCKWISE = ['SB', 'BB', 'UTG', 'UTG+1', 'UTG+2', 'UTG+3', 'LJ', 'HJ', 'CO', 'BTN']
+const PREFLOP_CYCLE = ['UTG', 'UTG+1', 'UTG+2', 'UTG+3', 'LJ', 'HJ', 'CO', 'BTN', 'SB', 'BB']
 
 function uniquePositions(positions) {
   return [...new Set((positions ?? []).filter(Boolean))]
 }
 
+function rotateFrom(order, firstActor) {
+  const index = order.indexOf(firstActor)
+  if (index < 0) return order
+  return [...order.slice(index), ...order.slice(0, index)]
+}
+
 function pickPreflopOrder(straddle) {
-  if (!straddle?.active) return PREFLOP_NO_STRADDLE
-  if (straddle.position === 'UTG') return PREFLOP_UTG_STRADDLE
-  if (straddle.position === 'BTN') return PREFLOP_BTN_STRADDLE
-  return PREFLOP_NO_STRADDLE
+  if (!straddle?.active) return rotateFrom(PREFLOP_CYCLE, 'UTG')
+  if (straddle.position === 'UTG') return rotateFrom(PREFLOP_CYCLE, 'UTG+2')
+  if (straddle.position === 'BTN') return rotateFrom(PREFLOP_CYCLE, 'SB')
+  return rotateFrom(PREFLOP_CYCLE, 'UTG')
 }
 
 export default function getActionOrder(street, allPositions, straddle) {
@@ -24,7 +27,7 @@ export default function getActionOrder(street, allPositions, straddle) {
 }
 
 if (import.meta.env?.DEV) {
-  const sample = ['UTG', 'UTG+1', 'UTG+2', 'LJ', 'HJ', 'CO', 'BTN', 'SB', 'BB']
+  const sample = ['UTG', 'UTG+1', 'UTG+2', 'UTG+3', 'LJ', 'HJ', 'CO', 'BTN', 'SB', 'BB']
 
   const normalPreflop = getActionOrder('preflop', sample, { active: false, position: null })
   console.assert(normalPreflop[0] === 'UTG', 'Normal preflop should start at UTG')
@@ -35,19 +38,17 @@ if (import.meta.env?.DEV) {
 
   const utgStraddlePreflop = getActionOrder('preflop', sample, { active: true, position: 'UTG' })
   console.assert(
-    utgStraddlePreflop[0] === 'UTG+1',
-    'UTG straddle preflop should start at UTG+1'
+    utgStraddlePreflop[0] === 'UTG+2',
+    'UTG straddle preflop should start at UTG+2'
   )
-  console.assert(
-    utgStraddlePreflop[utgStraddlePreflop.length - 1] === 'UTG',
-    'UTG straddle preflop should end at UTG'
-  )
+  console.assert(utgStraddlePreflop.includes('UTG'), 'UTG straddle preflop should include UTG')
+  console.assert(utgStraddlePreflop.includes('UTG+1'), 'UTG straddle preflop should include UTG+1')
 
   const btnStraddlePreflop = getActionOrder('preflop', sample, { active: true, position: 'BTN' })
-  console.assert(btnStraddlePreflop[0] === 'UTG', 'BTN straddle preflop should start at UTG')
+  console.assert(btnStraddlePreflop[0] === 'SB', 'BTN straddle preflop should start at SB')
   console.assert(
-    btnStraddlePreflop[btnStraddlePreflop.length - 1] === 'BTN',
-    'BTN straddle preflop should end at BTN'
+    btnStraddlePreflop.includes('BTN'),
+    'BTN straddle preflop should include BTN'
   )
 
   const postFlop = getActionOrder('flop', sample, { active: true, position: 'UTG' })

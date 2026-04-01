@@ -18,6 +18,10 @@ export function estimatePot(actionLists = [], initialPot = 0) {
   for (const actions of actionLists) {
     for (const actionItem of actions ?? []) {
       if (!actionItem) continue
+      if (actionItem.rawDollars != null) {
+        pot += Number(actionItem.rawDollars) || 0
+        continue
+      }
       if (actionItem.action === 'bet' || actionItem.action === 'raise' || actionItem.action === 'all-in') {
         const amount = actionAmount(actionItem, pot)
         currentPrice = Math.max(currentPrice, amount)
@@ -42,10 +46,8 @@ export function getInitialPot(hand) {
 }
 
 export function getOrderedHandPositions(hand) {
-  const included = [hand.heroPosition, ...(hand.villains ?? []).map((villain) => villain.position)]
-    .filter(Boolean)
-    .filter((position, index, arr) => arr.indexOf(position) === index)
-  return POSITIONS.filter((position) => included.includes(position))
+  const empty = new Set(hand?.emptyPositions ?? [])
+  return POSITIONS.filter((position) => !empty.has(position))
 }
 
 export function getActivePositionsAfterActions(startPositions, actionLists = []) {

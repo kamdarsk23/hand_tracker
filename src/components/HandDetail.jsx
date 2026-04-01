@@ -103,36 +103,6 @@ export default function HandDetail({ hand, onEdit, onDelete }) {
         </p>
       </section>
 
-      <section className="detail-section">
-        <h2 className="detail-section__title">Hero</h2>
-        <p className="detail-section__row">
-          <strong>Position:</strong> {hand.heroPosition ?? '-'}
-        </p>
-        <p className="detail-section__row">
-          <strong>Stack:</strong> {hand.heroStack != null && hand.heroStack !== '' ? `$${hand.heroStack}` : '-'}
-        </p>
-        <div className="detail-section__cards">
-          {(hand.heroCards ?? []).filter(Boolean).map((card) => (
-            <CardBadge key={card} card={card} large />
-          ))}
-        </div>
-      </section>
-
-      <section className="detail-section">
-        <h3 className="detail-section__title">Villains</h3>
-        {hand.villains?.length ? (
-          <ul className="detail-section__actions">
-            {hand.villains.map((villain) => (
-              <li key={villain.position}>
-                {villain.position} {villain.stack != null ? `- $${villain.stack}` : '-'}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="action-timeline__empty">No villains logged.</p>
-        )}
-      </section>
-
       <StreetSection title="Preflop" actions={hand.preflopActions ?? []} />
       <StreetSection title="Flop" boardCards={flopCards} actions={hand.flopActions ?? []} />
       <StreetSection title="Turn" boardCards={turnCards} actions={hand.turnActions ?? []} />

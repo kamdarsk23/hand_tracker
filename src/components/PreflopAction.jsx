@@ -68,6 +68,12 @@ export default function PreflopAction({
             hand={hand}
             actions={actions}
             onAction={addAction}
+            onSetHeroPosition={(position) => updateHand({ heroPosition: position })}
+            onMarkEmptyPosition={(position) =>
+              updateHand({
+                emptyPositions: [...new Set([...(hand.emptyPositions ?? []), position])],
+              })
+            }
             positions={positions}
             street="preflop"
             straddle={hand.straddle}

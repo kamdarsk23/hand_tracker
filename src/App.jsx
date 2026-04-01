@@ -1,8 +1,6 @@
 import { useMemo, useState } from 'react'
 import logger from './utils/logger'
 import TableSetup from './components/TableSetup'
-import HeroSetup from './components/HeroSetup'
-import VillainSetup from './components/VillainSetup'
 import PreflopAction from './components/PreflopAction'
 import FlopStep from './components/FlopStep'
 import TurnStep from './components/TurnStep'
@@ -25,6 +23,7 @@ function createNewHand() {
     updatedAt: null,
     blinds: { sb: '', bb: '' },
     straddle: { active: false, position: null, amount: null },
+    emptyPositions: [],
     heroPosition: null,
     heroStack: '',
     heroCards: [null, null],
@@ -48,7 +47,7 @@ function cloneHand(hand) {
   return JSON.parse(JSON.stringify(hand))
 }
 
-const LOGGER_STEPS = ['Table', 'Hero', 'Villains', 'Preflop', 'Flop', 'Turn', 'River', 'Result']
+const LOGGER_STEPS = ['Table', 'Preflop', 'Flop', 'Turn', 'River', 'Result']
 
 function HandLoggerView({ hand, onChange, onExit, onSaveHand, editMode = false }) {
   const [step, setStep] = useState(0)
@@ -71,10 +70,10 @@ function HandLoggerView({ hand, onChange, onExit, onSaveHand, editMode = false }
   ]).filter((position) => position !== hand.heroPosition)
   const usedCards = collectUsedCards(hand)
   const latestStreetStep = (() => {
-    if (hand.river || (hand.riverActions ?? []).length > 0 || hand.result != null) return 6
-    if (hand.turn || (hand.turnActions ?? []).length > 0) return 5
-    if ((hand.flop ?? []).some(Boolean) || (hand.flopActions ?? []).length > 0) return 4
-    return 3
+    if (hand.river || (hand.riverActions ?? []).length > 0 || hand.result != null) return 4
+    if (hand.turn || (hand.turnActions ?? []).length > 0) return 3
+    if ((hand.flop ?? []).some(Boolean) || (hand.flopActions ?? []).length > 0) return 2
+    return 1
   })()
 
   const goBack = () => {
@@ -106,12 +105,6 @@ function HandLoggerView({ hand, onChange, onExit, onSaveHand, editMode = false }
         <TableSetup hand={hand} onChange={onChange} onBack={goBack} onNext={() => setStep(1)} />
       )}
       {step === 1 && (
-        <HeroSetup hand={hand} onChange={onChange} onBack={goBack} onNext={() => setStep(2)} />
-      )}
-      {step === 2 && (
-        <VillainSetup hand={hand} onChange={onChange} onBack={goBack} onNext={() => setStep(3)} />
-      )}
-      {step === 3 && (
         <PreflopAction
           hand={hand}
           onChange={onChange}
@@ -119,11 +112,11 @@ function HandLoggerView({ hand, onChange, onExit, onSaveHand, editMode = false }
           positions={orderedPositions}
           initialPot={getInitialPot(hand)}
           editable={step === latestStreetStep}
-          onDealFlop={() => setStep(4)}
-          onHandOver={() => setStep(7)}
+          onDealFlop={() => setStep(2)}
+          onHandOver={() => setStep(5)}
         />
       )}
-      {step === 4 && (
+      {step === 2 && (
         <FlopStep
           hand={hand}
           onChange={onChange}
@@ -131,11 +124,11 @@ function HandLoggerView({ hand, onChange, onExit, onSaveHand, editMode = false }
           usedCards={usedCards}
           positions={flopPositions}
           editable={step === latestStreetStep}
-          onDealTurn={() => setStep(5)}
-          onHandOver={() => setStep(7)}
+          onDealTurn={() => setStep(3)}
+          onHandOver={() => setStep(5)}
         />
       )}
-      {step === 5 && (
+      {step === 3 && (
         <TurnStep
           hand={hand}
           onChange={onChange}
@@ -143,11 +136,11 @@ function HandLoggerView({ hand, onChange, onExit, onSaveHand, editMode = false }
           usedCards={usedCards}
           positions={turnPositions}
           editable={step === latestStreetStep}
-          onDealRiver={() => setStep(6)}
-          onHandOver={() => setStep(7)}
+          onDealRiver={() => setStep(4)}
+          onHandOver={() => setStep(5)}
         />
       )}
-      {step === 6 && (
+      {step === 4 && (
         <RiverStep
           hand={hand}
           onChange={onChange}
@@ -155,11 +148,11 @@ function HandLoggerView({ hand, onChange, onExit, onSaveHand, editMode = false }
           usedCards={usedCards}
           positions={riverPositions}
           editable={step === latestStreetStep}
-          onShowdown={() => setStep(7)}
-          onHandOver={() => setStep(7)}
+          onShowdown={() => setStep(5)}
+          onHandOver={() => setStep(5)}
         />
       )}
-      {step === 7 && (
+      {step === 5 && (
         <ResultStep
           hand={hand}
           onChange={onChange}
